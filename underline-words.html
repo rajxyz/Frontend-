@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en"> 
+ <head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Highlight Words Tool</title> 
+  <script src="https://cdn.tailwindcss.com"></script> 
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet"> 
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;                                                    
+      background-color: white;
+      color: black;
+      text-align: center;
+    }
+    .content {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .highlight {
+      text-decoration: underline;
+    }
+    .hidden {
+      display: none;
+    }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      margin-top: 20px;
+      width: 100%;
+    }
+    .dropdown-button {
+      background-color: #4c51bf;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+    select, input[type="color"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .navigation-bar {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #2d3748;
+    }
+    .word-lists {
+      display: none;
+      text-align: left;
+      margin-top: 20px;
+    }
+    .word-lists h3 {
+      margin-bottom: 10px;
+    }
+    .word-lists ul {
+      list-style: none;
+      padding: 0;
+    }
+    .word-lists li {
+      margin: 5px 0;
+    }
+    .word-lists label {
+      display: flex;
+      align-items: center;
+    }
+    .word-lists input {
+      margin-right: 10px;
+    }
+    .save-button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2b6cb0;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style> 
+ </head> 
+ <body> 
+  <div class="content"> 
+   <h1 class="text-2xl font-semibold mb-4" style="color: #4A5568;">Highlighting Tool</h1> <textarea id="inputParagraph" placeholder="Enter your paragraph here..." class="w-full p-2 mb-4 border rounded"></textarea> 
+   <div class="dropdown"> <button id="highlightButton" class="dropdown-button">Highlight Words</button> 
+   </div> <button id="customizeButton" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-lg flex items-center justify-center mt-4"> <span>Customize</span> 
+    <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path> 
+    </svg> </button> 
+   <div id="customPanel" class="hidden"> <label class="block text-sm mb-2">Underline Style:</label> <select id="underlineStyle"> <option value="solid">Solid</option> <option value="dotted">Dotted</option> <option value="dashed">Dashed</option> </select> <label class="block text-sm mb-2">Underline Color:</label> 
+    <input type="color" id="underlineColor" value="#ffdd00"> <label class="block text-sm mb-2">Text Color:</label> 
+    <input type="color" id="textColor" value="#000000"> 
+   </div> 
+   <div id="output" class="mt-6"> 
+    <h3 class="text-lg font-semibold">Updated Paragraph:</h3> 
+    <p id="updatedParagraph" class="mt-2"></p> 
+   </div> 
+   <div class="navigation-bar" onclick="toggleWordList()">
+     Customize Your Words 
+   </div> 
+   <div class="word-lists" id="wordLists"> 
+    <h3>Choose Words for Highlighting:</h3> 
+    <ul> 
+     <li><label><input type="checkbox" value="Terminology" class="forgetting-word"> Terminology</label></li> 
+     <li><label><input type="checkbox" value="Newly introduced words" class="forgetting-word"> Newly introduced or technical words</label></li> 
+     <li><label><input type="checkbox" value="Definitions" class="forgetting-word"> Definitions</label></li> 
+     <li><label><input type="checkbox" value="Formulas and Units" class="forgetting-word"> Formulas and Units</label></li> 
+     <li><label><input type="checkbox" value="Dates and Numbers" class="forgetting-word"> Dates and Numbers</label></li> 
+     <li><label><input type="checkbox" value="Names" class="forgetting-word"> Names</label></li> 
+     <li><label><input type="checkbox" value="Processes and Steps" class="forgetting-word"> Processes and Steps</label></li> 
+     <li><label><input type="checkbox" value="Examples" class="forgetting-word"> Examples</label></li> 
+     <li><label><input type="checkbox" value="Exceptions" class="forgetting-word"> Exceptions</label></li> 
+     <li><label><input type="checkbox" value="Synonyms and Antonyms" class="forgetting-word"> Synonyms and Antonyms</label></li> 
+     <li><label><input type="checkbox" value="Diagrams and Labels" class="forgetting-word"> Diagrams and Labels</label></li> 
+     <li><label><input type="checkbox" value="Cause-Effect Relationships" class="forgetting-word"> Cause-Effect Relationships</label></li> 
+     <li><label><input type="checkbox" value="Foreign Words" class="forgetting-word"> Foreign Words</label></li> 
+     <li><label><input type="checkbox" value="Rules or Theories" class="forgetting-word"> Rules or Theories</label></li> 
+     <li><label><input type="checkbox" value="Abbreviations and Acronyms" class="forgetting-word"> Abbreviations and Acronyms</label></li> 
+     <li><label><input type="checkbox" value="Lists" class="forgetting-word"> Lists</label></li> 
+    </ul> <button class="dropdown-button mt-4" onclick="applyCustomWords()">Apply Customization</button> 
+   </div> <button class="save-button" onclick="saveText()">Save</button> 
+   <div id="errorMessage" class="error-message hidden">
+     Please enter a paragraph before highlighting words. 
+   </div> 
+  </div> 
+  <script>
+    let customForgetfulWords = [];
+
+    function toggleWordList() {
+      const wordList = document.getElementById("wordLists");
+      wordList.style.display = wordList.style.display === "block" ? "none" : "block";
+    }
+
+    document.getElementById("customizeButton").addEventListener("click", () => {
+      const customPanel = document.getElementById("customPanel");
+      customPanel.classList.toggle("hidden");
+    });
+
+    function applyCustomWords() {
+      const checkboxes = document.querySelectorAll(".forgetting-word:checked");
+      customForgetfulWords = [];
+      checkboxes.forEach(checkbox => {
+        customForgetfulWords.push(checkbox.value);
+      });
+      highlightForgettableWords();
+
+      // Show a visual confirmation
+      const wordList = document.getElementById("wordLists");
+      const successMessage = document.createElement("p");
+      successMessage.id = "successMessage";
+      successMessage.innerText = "Words successfully selected!";
+      successMessage.style.color = "green";
+      successMessage.style.fontSize = "14px";
+      successMessage.style.marginTop = "10px";
+
+      // Prevent multiple success messages
+      const existingMessage = document.getElementById("successMessage");
+      if (existingMessage) {
+        wordList.removeChild(existingMessage);
+      }
+
+      wordList.appendChild(successMessage);
+
+      // Remove the message after 3 seconds
+      setTimeout(() => {
+        if (successMessage.parentNode) {
+          successMessage.parentNode.removeChild(successMessage);
+        }
+      }, 3000);
+    }
+
+    function highlightForgettableWords() {
+      const paragraph = document.getElementById("inputParagraph").value;
+
+      if (!paragraph.trim()) {
+        document.getElementById("errorMessage").classList.remove("hidden");
+        return;
+      } else {
+        document.getElementById("errorMessage").classList.add("hidden");
+      }
+
+      let text = paragraph;
+      customForgetfulWords.forEach(word => {
+        let regex = new RegExp("\\b" + word + "\\b", "g");
+        text = text.replace(regex, match => {
+          return `<span class="highlight" style="text-decoration: ${document.getElementById('underlineStyle').value}; text-decoration-color: ${document.getElementById('underlineColor').value}; color: ${document.getElementById('textColor').value};">${match}</span>`;
+        });
+      });
+      document.getElementById("updatedParagraph").innerHTML = text;
+    }
+
+    document.getElementById("highlightButton").addEventListener("click", highlightForgettableWords);
+
+    function saveText() {
+      const text = document.getElementById("updatedParagraph").innerText;
+      
+      if (!text.trim()) {
+        document.getElementById("errorMessage").classList.remove("hidden");
+        return;
+      } else {
+        document.getElementById("errorMessage").classList.add("hidden");
+      }
+
+      console.log("Saved content:", text);
+      alert("Your highlighted text has been saved successfully!");
+    }
+  </script> 
+ </body>
+</html>

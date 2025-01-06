@@ -1,1 +1,124 @@
+<!doctype html>
+<html lang="en"> 
+<head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Trick Generator</title> 
+  <script src="https://cdn.tailwindcss.com"></script> 
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="styles.css"> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <style>
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background-color: white;
+      padding-bottom: 70px; /* Space for fixed toolbar */
+    }
+    .hidden {
+      display: none;
+    }
+    .fixed-toolbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #4f46e5; /* Indigo-500 */
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .fixed-toolbar button {
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 10px 20px;
+      border: none;
+      background-color: white;
+      color: #4f46e5;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .fixed-toolbar button:hover {
+      background-color: #e0e7ff; /* Light Indigo */
+    }
+  </style> 
+</head> 
+<body> 
+  <!-- Uppermost Heading Section --> 
+  <div class="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white text-center"> 
+    <h1 class="text-2xl font-semibold">AT-PW TRICKS</h1> 
+  </div> 
 
+  <!-- Trick Generator Content --> 
+  <div class="content p-6 max-w-lg mx-auto mt-6 bg-white rounded-lg shadow-lg"> 
+    <h1 class="text-2xl font-semibold mb-4 text-center">Trick Generator</h1> 
+    <textarea id="inputLetters" placeholder="Enter words to generate a trick..." class="w-full p-2 mb-4 border rounded"></textarea> 
+    
+    <label for="trickType" class="block mb-2">Choose type:</label> 
+    <select id="trickType" class="w-full p-2 mb-4 border rounded"> 
+      <option value="acronym">Acronym (Meaningful Words)</option> 
+      <option value="acrostic">Acrostic (Meaningful Sentences)</option> 
+      <option value="rhymesSongs">Rhymes or Songs</option> 
+      <option value="visualization">Visualization</option> 
+      <option value="methodLoci">Method of Loci</option> 
+      <option value="association">Association</option> 
+      <option value="pegSystem">Peg System</option> 
+      <option value="keyWords">Key Words Method</option> 
+    </select> 
+    
+    <button id="generateButton" onclick="generateTrick()" class="w-full bg-indigo-500 text-white py-2 rounded">Generate Trick</button> 
+    
+    <div id="loadingMessage" class="mt-2 hidden">Generating, please wait...</div> 
+    <div id="output" class="mt-6"> 
+      <h3 class="text-lg font-semibold">Generated Trick:</h3> 
+      <p id="trickText" class="mt-2"></p> 
+    </div> 
+  </div> 
+
+  <!-- Fixed Toolbar with Download Button -->
+  <div class="fixed-toolbar">
+    <button onclick="downloadPDF()">Download Tricks as PDF</button>
+  </div>
+
+  <!-- Link to external JavaScript file -->
+  <script src="scripts.js"></script>
+  <script>
+    async function generateTrick() {
+      // Mock logic to simulate trick generation
+      const input = document.getElementById('inputLetters').value.trim();
+      const type = document.getElementById('trickType').value;
+      const outputElement = document.getElementById('trickText');
+      const loadingMessage = document.getElementById('loadingMessage');
+      
+      if (!input) {
+        alert('Please enter words to generate a trick.');
+        return;
+      }
+      
+      loadingMessage.classList.remove('hidden');
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
+      
+      outputElement.textContent = `Trick for "${input}" as ${type}: Example Trick`; // Example output
+      loadingMessage.classList.add('hidden');
+    }
+
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const trickText = document.getElementById('trickText').textContent.trim();
+      if (!trickText) {
+        alert('No trick available to download. Please generate one first.');
+        return;
+      }
+
+      doc.setFont('Poppins', 'normal');
+      doc.setFontSize(16);
+      doc.text("AT-PW Tricks", 10, 20);
+      doc.setFontSize(12);
+      doc.text(trickText, 10, 30);
+      doc.save('Tricks.pdf');
+    }
+  </script>
+</body>
+</html>

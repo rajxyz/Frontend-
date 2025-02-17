@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Question Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> <!-- jsPDF library -->
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: white;
+    }
+    .textarea-container {
+      position: relative;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #4A5568;
+      border-radius: 8px;
+      font-size: 16px;
+      resize: none;
+    }
+    .camera-icon {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 20px;
+      color: #4A5568;
+      background-color: #E2E8F0;
+      border-radius: 50%;
+      padding: 5px;
+      transition: background-color 0.3s;
+    }
+    .camera-icon:hover {
+      background-color: #CBD5E0;
+    }
+    /* Fixed toolbar for download PDF button */
+    .fixed-toolbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 10px;
+      background-color: #4A5568;
+      text-align: center;
+    }
+    .fixed-toolbar button {
+      background-color: #4A5568;
+      color: white;
+      font-size: 16px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .fixed-toolbar button:hover {
+      background-color: #2d3748;
+    }
+  </style>
+</head>
+<body>
+  <!-- Heading Section -->
+  <div class="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white text-center">
+    <h1 class="text-2xl font-semibold">AT-PW TRICKS</h1>
+  </div>
+
+  <!-- Content -->
+  <div class="content p-6 max-w-lg mx-auto mt-6 bg-white rounded-lg shadow-lg">
+    <h1 class="text-2xl font-semibold mb-4 text-center">Question Generator</h1>
+
+    <!-- Input Box with Camera and Import Icons -->
+    <div class="textarea-container">
+      <textarea id="inputParagraph" placeholder="Enter your paragraph here (80 words max)..." rows="5"></textarea>
+      <span class="camera-icon" onclick="captureImage()">📷</span>
+      <span class="camera-icon" onclick="importFile()" style="right: 50px;">📂</span>
+      <input type="file" id="fileInput" accept=".png, .jpg, .jpeg, .pdf" style="display: none;" />
+    </div>
+
+    <label for="questionType" class="block mb-2">Choose question type:</label>
+    <select id="questionType" class="w-full p-2 mb-4 border rounded">
+      <option value="fillInTheBlank">Fill in the blank</option>
+      <option value="multipleChoice">Multiple Choice</option>
+      <option value="trueFalse">True/False</option>
+      <option value="matching">Matching</option>
+      <option value="assertionReason">Assertion and Reason</option>
+      <option value="definition">Definition-based</option>
+      <option value="diagramLabeling">Diagram Labeling</option>
+      <option value="statementAnalysis">Statement Analysis</option>
+      <option value="numerical">Numerical Problem</option>
+    </select>
+    <button id="generateButton" onclick="generateQuestion()" class="w-full bg-indigo-500 text-white py-2 rounded">Generate Question</button>
+
+    <div id="loadingMessage" class="mt-2 hidden">
+      Generating, please wait...
+    </div>
+
+    <div id="output" class="mt-6">
+      <h3 class="text-lg font-semibold">Generated Question:</h3>
+      <p id="questionText" class="mt-2"></p>
+    </div>
+  </div>
+
+  <!-- Fixed Download PDF Toolbar -->
+  <div class="fixed-toolbar">
+    <button onclick="downloadPDF()">Download PDF</button>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    async function importFile() {
+      const fileInput = document.getElementById('fileInput');
+      fileInput.click();
+      fileInput.onchange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const loadingMessage = document.getElementById('loadingMessage');
+        loadingMessage.classList.remove('hidden');
+
+        try {
+          if (file.type === 'application/pdf') {
+            const extractedText = await processPDF(file);
+            limitInputText(extractedText);
+          } else {
+            const extractedText = await processImage(file);
+            limitInputText(extractedText);
+          }
+        } catch (error) {
+          alert('Error extracting text.');
+          console.error(error);
+        } finally {
+          loadingMessage.classList.add('hidden');
+        }
+      };
+    }
+
+    async function processImage(file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      return new Promise((resolve, reject) => {
+        reader.onload = async (event) => {
+          try {
+            const result = await Tesseract.recognize(event.target.result, 'eng');
+            resolve(result.data.text);
+          } catch (error) {
+            reject(error);
+          }
+        };
+      });
+    }
+
+    async function processPDF(file) {
+      return "PDF processing logic here"; // Placeholder for PDF.js or API
+    }
+
+    function limitInputText(text) {
+      const words = text.split(/\s+/);
+      const limitedText = words.slice(0, 80).join(' ');
+      document.getElementById('inputParagraph').value = limitedText;
+    }
+
+    async function captureImage() {
+      const overlay = document.createElement('div');
+      overlay.id = 'captureOverlay';
+
+      const videoElement = document.createElement('video');
+      videoElement.setAttribute('autoplay', '');
+      videoElement.setAttribute('playsinline', '');
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoElement.srcObject = stream;
+      document.body.appendChild(overlay);
+      overlay.appendChild(videoElement);
+
+      const captureButton = document.createElement('button');
+      captureButton.innerText = 'Capture';
+      captureButton.onclick = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        canvas.getContext('2d').drawImage(videoElement, 0, 0);
+        const imageData = canvas.toDataURL('image/png');
+        stream.getTracks().forEach(track => track.stop());
+        overlay.remove();
+        alert('Captured Image!');
+      };
+      overlay.appendChild(captureButton);
+    }
+
+    function generateQuestion() {
+      const inputParagraph = document.getElementById("inputParagraph").value.trim();
+      const questionType = document.getElementById("questionType").value;
+      const questionText = document.getElementById("questionText");
+      const loadingMessage = document.getElementById("loadingMessage");
+
+      if (!inputParagraph) {
+        alert("Please enter a paragraph.");
+        return;
+      }
+
+      loadingMessage.classList.remove('hidden');
+      setTimeout(() => {
+        questionText.textContent = `Generated ${questionType} question: "${inputParagraph}".`;
+        loadingMessage.classList.add('hidden');
+      }, 2000);
+    }
+
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const content = document.getElementById("output").textContent || "No content to save";
+      doc.text(content, 10, 10);
+      doc.save("generated-question.pdf");
+    }
+  </script>
+</body>
+</html>

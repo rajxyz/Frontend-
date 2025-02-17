@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paragraph Recaller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <style>
+      body { 
+        font-family: 'Poppins', sans-serif; 
+        background-color: white;
+      }
+      .hidden {
+        display: none;
+      }
+      .textarea-container {
+        position: relative;
+        margin-bottom: 20px;
+      }
+      #inputParagraph {
+        width: 100%;
+        padding: 12px;
+        padding-right: 40px;
+        border: 2px solid #d1d5db; 
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      #inputParagraph:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      }
+      .camera-upload-container {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: flex;
+        gap: 10px;
+      }
+      .camera-icon, .upload-icon {
+        cursor: pointer;
+        color: #6366f1;
+        font-size: 24px;
+        padding: 8px;
+        border-radius: 4px;
+        transition: 0.3s;
+      }
+      .camera-icon:hover, .upload-icon:hover {
+        color: #4f46e5;
+        background-color: rgba(99, 102, 241, 0.1);
+      }
+      .button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+      }
+      .camera-container {
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        transform: translateY(-50%);
+        display: none;
+      }
+      video {
+        width: 100%;
+        border-radius: 8px;
+        background-color: #f3f4f6;
+        border: 2px solid #d1d5db;
+      }
+      .camera-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+      }
+      .fixed-toolbar {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background-color: #4f46e5;
+        color: white;
+        text-align: center;
+        padding: 10px;
+        font-size: 16px;
+        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .fixed-toolbar button {
+        background-color: white;
+        color: #4f46e5;
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .fixed-toolbar button:hover {
+        background-color: #f3f4f6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white text-center">
+      <h1 class="text-2xl font-semibold">AT-PW TRICKS</h1>
+    </div>
+
+    <div class="content p-6 max-w-lg mx-auto mt-6 bg-white rounded-lg shadow-lg">
+      <h1 class="text-2xl font-semibold mb-4 text-center">Paragraph Recaller</h1>
+      <div class="textarea-container">
+        <textarea id="inputParagraph" placeholder="Enter a page or paragraph here..." rows="5"></textarea>
+        <div class="camera-upload-container">
+          <span class="camera-icon" onclick="startCamera()"><i class="fas fa-camera"></i></span>
+          <span class="upload-icon" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i></span>
+        </div>
+        <input type="file" id="fileInput" class="hidden" accept=".pdf,image/*,.txt" onchange="handleFileUpload(this.files)" />
+      </div>
+
+      <label for="extractType" class="block mb-2 mt-4">Change Paragraph to:</label>
+      <select id="extractType" class="w-full p-2 mb-4 border rounded">
+        <option value="story">Story (in Hinglish language)</option>
+        <option value="song">Song/Poem (Hinglish poem)</option>
+        <option value="visualAnalogy">Visual Analogy</option>
+        <option value="flashcards">Flashcards</option>
+        <option value="dialogue">Dialogue (Hinglish)</option>
+        <option value="comics">Comics (Hinglish)</option>
+        <option value="drama">Drama/Role-playing (Hinglish)</option>
+        <option value="rephrasedSummary">Rephrased Summary</option>
+        <option value="timeline">Timeline</option>
+        <option value="comparison">Comparison</option>
+        <option value="jingles">Jingles</option>
+        <option value="gamification">Gamification</option>
+        <option value="flashFiction">Flash Fiction</option>
+      </select>
+
+      <div class="button-container">
+        <button id="generateButton" onclick="generateShortNotes()" class="w-full bg-indigo-500 text-white py-2 rounded">Generate Content</button>
+      </div>
+
+      <div id="loadingMessage" class="mt-2 hidden">Generating, please wait...</div>
+
+      <div id="output" class="mt-6">
+        <h3 class="text-lg font-semibold">Generated Content:</h3>
+        <p id="shortNotesText" class="mt-2"></p>
+      </div>
+
+      <div id="cameraOverlay" class="camera-overlay"></div>
+      <div id="cameraContainer" class="camera-container">
+        <video id="camera" autoplay></video>
+        <button id="captureBtn" class="bg-indigo-500 text-white py-2 rounded mt-2 w-full" onclick="captureImage()">Capture Image</button>
+      </div>
+    </div>
+
+    <div class="fixed-toolbar">
+      <button id="downloadPdfButton" onclick="downloadPdf()">Download PDF</button>
+    </div>
+
+    <script>
+      let videoStream;
+
+      function startCamera() {
+        const cameraContainer = document.getElementById("cameraContainer");
+        const cameraOverlay = document.getElementById("cameraOverlay");
+        const camera = document.getElementById("camera");
+
+        cameraContainer.style.display = 'block';
+        cameraOverlay.style.display = 'block';
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(function (stream) {
+            videoStream = stream;
+            camera.srcObject = stream;
+          })
+          .catch(function (error) {
+            alert('Unable to access the camera. Please check permissions.');
+            console.error(error);
+          });
+      }
+
+      function captureImage() {
+        const canvas = document.createElement('canvas');
+        const camera = document.getElementById("camera");
+        const context = canvas.getContext('2d');
+        const cameraContainer = document.getElementById("cameraContainer");
+        const cameraOverlay = document.getElementById("cameraOverlay");
+
+        canvas.width = camera.videoWidth;
+        canvas.height = camera.videoHeight;
+        context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+
+        videoStream.getTracks().forEach(track => track.stop());
+        cameraContainer.style.display = 'none';
+        cameraOverlay.style.display = 'none';
+
+        extractTextFromImage(canvas);
+      }
+
+      function extractTextFromImage(canvas) {
+        Tesseract.recognize(canvas.toDataURL(), 'eng')
+          .then(({ data: { text } }) => {
+            document.getElementById("inputParagraph").value = text;
+          })
+          .catch(error => {
+            console.error("Error extracting text from image: ", error);
+          });
+      }
+
+      function handleFileUpload(files) {
+        const file = files[0];
+        if (file.type === "application/pdf") {
+          extractTextFromPDF(file);
+        } else if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = function () {
+            const img = new Image();
+            img.src = reader.result;
+            img.onload = function () {
+              const canvas = document.createElement('canvas');
+              const context = canvas.getContext('2d');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              context.drawImage(img, 0, 0);
+              extractTextFromImage(canvas);
+            };
+          };
+          reader.readAsDataURL(file);
+        } else if (file.type === "text/plain") {
+          const reader = new FileReader();
+          reader.onload = function () {
+            document.getElementById("inputParagraph").value = reader.result;
+          };
+          reader.readAsText(file);
+        } else {
+          alert("Unsupported file type. Please upload a PDF, image, or text file.");
+        }
+      }
+
+      function extractTextFromPDF(file) {
+        const reader = new FileReader();
+        reader.onload = function () {
+          const typedarray = new Uint8Array(reader.result);
+          pdfjsLib.getDocument(typedarray).promise.then(function (pdf) {
+            let text = "";
+            const numPages = pdf.numPages;
+            const promises = [];
+
+            for (let i = 1; i <= numPages; i++) {
+              promises.push(pdf.getPage(i).then(function (page) {
+                return page.getTextContent().then(function (textContent) {
+                  textContent.items.forEach(function (item) {
+                    text += item.str + " ";
+                  });
+                });
+              }));
+            }
+
+            Promise.all(promises).then(function () {
+              document.getElementById("inputParagraph").value = text.trim();
+            });
+          });
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      function generateShortNotes() {
+        const inputText = document.getElementById("inputParagraph").value;
+        const outputElement = document.getElementById("shortNotesText");
+
+        if (!inputText.trim()) {
+          alert("Please enter or upload some text first!");
+          return;
+        }
+
+        const type = document.getElementById("extractType").value;
+        document.getElementById("loadingMessage").classList.remove("hidden");
+        setTimeout(() => {
+          outputElement.textContent = `Generated content in ${type}: ${inputText}`;
+          document.getElementById("loadingMessage").classList.add("hidden");
+        }, 2000);
+      }
+
+      function downloadPdf() {
+        const doc = new jspdf.jsPDF();
+        const content = document.getElementById("shortNotesText").textContent || "No content generated yet.";
+        doc.text(content, 10, 10);
+        doc.save("generated_content.pdf");
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en"> 
+  <head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Short Notes Maker</title> 
+    <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script> 
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet"> 
+    <style>
+      body { 
+        font-family: 'Poppins', sans-serif; 
+        background-color: white;
+        margin-bottom: 70px; /* Add space at the bottom for the fixed toolbar */
+      }
+      .hidden {
+        display: none;
+      }
+      .textarea-container {
+        position: relative;
+      }
+      #inputParagraph {
+        width: 100%;
+        padding: 12px;
+        padding-right: 40px;
+        border: 2px solid #d1d5db; /* Light border */
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      #inputParagraph:focus {
+        border-color: #6366f1; /* Indigo on focus */
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      }
+      .camera-icon, .import-icon {
+        position: absolute;
+        bottom: 10px;
+        cursor: pointer;
+        color: #6366f1; /* Indigo color */
+        font-size: 20px;
+      }
+      .camera-icon {
+        right: 10px;
+      }
+      .import-icon {
+        right: 50px; /* Position slightly left from the camera icon */
+      }
+      .camera-icon:hover, .import-icon:hover {
+        color: #4f46e5; /* Darker indigo on hover */
+      }
+      .file-input {
+        display: none;
+      }
+      .fixed-toolbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #4CAF50;
+        padding: 10px 0;
+        text-align: center;
+        box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .fixed-toolbar button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      .fixed-toolbar button:hover {
+        background-color: #45a049;
+      }
+    </style> 
+  </head> 
+  <body> 
+    <div class="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white text-center"> 
+      <h1 class="text-2xl font-semibold">AT-PW TRICKS</h1> 
+    </div> 
+
+    <div class="content p-6 max-w-lg mx-auto mt-6 bg-white rounded-lg shadow-lg"> 
+      <h1 class="text-2xl font-semibold mb-4 text-center">Short Notes Maker</h1> 
+      <div class="textarea-container">
+        <textarea id="inputParagraph" placeholder="Enter a page or paragraph here..." rows="5"></textarea> 
+        <span class="camera-icon" onclick="captureImage()"><i class="fas fa-camera"></i></span>
+        <span class="import-icon">
+          <label for="fileInput"><i class="fas fa-file-import"></i></label>
+          <input id="fileInput" type="file" class="file-input" accept=".jpg,.jpeg,.png,.pdf" onchange="importFile(event)">
+        </span>
+      </div> 
+
+      <label for="extractType" class="block mb-2">Choose type of content to extract:</label> 
+      <select id="extractType" class="w-full p-2 mb-4 border rounded"> 
+        <option value="keyTerms">Key Terms and Concepts</option> 
+        <option value="mainIdeas">Main Ideas and Summary</option> 
+        <option value="questions">Questions and Answers</option> 
+      </select> 
+
+      <button id="generateButton" onclick="generateShortNotes()" class="w-full bg-indigo-500 text-white py-2 rounded">Generate Short Notes</button> 
+      <div id="loadingMessage" class="mt-2 hidden">Generating, please wait...</div> 
+
+      <div id="output" class="mt-6"> 
+        <h3 class="text-lg font-semibold">Generated Short Notes:</h3> 
+        <p id="shortNotesText" class="mt-2"></p> 
+      </div> 
+    </div> 
+
+    <div class="fixed-toolbar">
+      <button id="downloadPDF" onclick="downloadPDF()">Download as PDF</button>
+    </div>
+
+    <script>
+      function captureImage() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = function (event) {
+          const file = event.target.files[0];
+          if (file) {
+            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+              document.getElementById('inputParagraph').value = text;
+              alert('Text extracted from image!');
+            });
+          }
+        };
+        input.click();
+      }
+
+      function importFile(event) {
+        const file = event.target.files[0];
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        if (fileExtension === 'pdf') {
+          alert("PDF file detected! Implement text extraction.");
+        } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+          Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+            document.getElementById('inputParagraph').value = text;
+            alert('Text extracted from image!');
+          });
+        } else {
+          alert('Unsupported file format.');
+        }
+      }
+
+      function generateShortNotes() {
+        const inputParagraph = document.getElementById("inputParagraph").value.trim();
+        const extractType = document.getElementById("extractType").value;
+        const shortNotesText = document.getElementById("shortNotesText");
+        const loadingMessage = document.getElementById("loadingMessage");
+
+        if (!inputParagraph) {
+          alert('Please enter text.');
+          return;
+        }
+
+        loadingMessage.classList.remove('hidden');
+
+        // Limit to 80 words
+        const words = inputParagraph.split(/\s+/).slice(0, 80).join(" ");
+        
+        setTimeout(() => {
+          shortNotesText.textContent = `Extracted ${extractType}: ${words}`;
+          loadingMessage.classList.add('hidden');
+        }, 2000);
+      }
+
+      function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const shortNotesText = document.getElementById("shortNotesText").textContent;
+        doc.text(shortNotesText, 10, 10);
+        doc.save('short_notes.pdf');
+      }
+    </script> 
+  </body>
+</html>

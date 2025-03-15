@@ -160,5 +160,83 @@
         handleFormSubmit(event, 'navigation.html');
       });
     </script>
+    <!-- EmailJS CDN and init -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+  (function(){
+    emailjs.init("EdfFvi6MXI3SzsXc6"); // Your Public Key
+  })();
+</script>
+
+<!-- Your main logic -->
+<script>
+  function toggleForms() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const formTitle = document.getElementById('formTitle');
+    const toggleText = document.getElementById('toggleText');
+
+    if (loginForm.classList.contains('hidden')) {
+      loginForm.classList.remove('hidden');
+      signupForm.classList.add('hidden');
+      formTitle.innerText = "Welcome back! Please log in to your account.";
+      toggleText.innerText = "Sign up";
+    } else {
+      loginForm.classList.add('hidden');
+      signupForm.classList.remove('hidden');
+      formTitle.innerText = "Get started with your new account.";
+      toggleText.innerText = "Log in";
+    }
+  }
+
+  // Login form stays the same
+  document.getElementById("loginFormElement").addEventListener("submit", function(event) {
+    event.preventDefault();
+    // You can add login validation here
+    window.location.href = 'navigation.html';
+  });
+
+  // OTP Sign-up logic
+  let generatedOTP = "";
+
+  document.getElementById("signupFormElement").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const email = document.getElementById("signupEmail").value;
+    const name = document.getElementById("signupName").value;
+    const password = document.getElementById("signupPassword").value;
+    const otpField = document.getElementById("otp");
+    const otpWrapper = document.getElementById("otpWrapper");
+    const submitBtn = document.getElementById("signupSubmitBtn");
+
+    if (submitBtn.innerText === "Verify OTP") {
+      const enteredOTP = otpField.value.trim();
+      if (enteredOTP === generatedOTP.toString()) {
+        alert("OTP Verified! Redirecting...");
+        window.location.href = 'navigation.html';
+      } else {
+        alert("Incorrect OTP. Try again.");
+      }
+      return;
+    }
+
+    generatedOTP = Math.floor(100000 + Math.random() * 900000);
+
+    const params = {
+      to_email: email,
+      otp: generatedOTP
+    };
+
+    emailjs.send("service_el9wt0a", "template_izpif8f", params)
+      .then(() => {
+        alert("OTP sent to your email!");
+        otpWrapper.classList.remove("hidden");
+        submitBtn.innerText = "Verify OTP";
+      })
+      .catch(() => {
+        alert("Failed to send OTP. Please try again.");
+      });
+  });
+</script>
   </body>
 </html>

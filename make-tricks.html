@@ -83,42 +83,39 @@
   <!-- Link to external JavaScript file -->
   <script src="scripts.js"></script>
   <script>
-    async function generateTrick() {
-      // Mock logic to simulate trick generation
-      const input = document.getElementById('inputLetters').value.trim();
-      const type = document.getElementById('trickType').value;
-      const outputElement = document.getElementById('trickText');
-      const loadingMessage = document.getElementById('loadingMessage');
-      
-      if (!input) {
-        alert('Please enter words to generate a trick.');
+  async function generateTrick() {
+    const concept = document.getElementById('inputLetters').value.trim();
+    const trickType = document.getElementById('trickType').value;
+    const outputElement = document.getElementById('trickText');
+    const loadingMessage = document.getElementById('loadingMessage');
+
+    if (!concept) {
+        alert("Please enter words to generate a trick.");
         return;
-      }
-      
-      loadingMessage.classList.remove('hidden');
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
-      
-      outputElement.textContent = `Trick for "${input}" as ${type}: Example Trick`; // Example output
-      loadingMessage.classList.add('hidden');
     }
 
-    function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+    loadingMessage.classList.remove("hidden");
+    outputElement.textContent = ""; // Clear previous output
 
-      const trickText = document.getElementById('trickText').textContent.trim();
-      if (!trickText) {
-        alert('No trick available to download. Please generate one first.');
-        return;
-      }
+    try {
+        const response = await fetch("https://trick-generator.onrender.com/generate_trick/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ concept: concept, trick_type: trickType })
+        });
 
-      doc.setFont('Poppins', 'normal');
-      doc.setFontSize(16);
-      doc.text("AT-PW Tricks", 10, 20);
-      doc.setFontSize(12);
-      doc.text(trickText, 10, 30);
-      doc.save('Tricks.pdf');
+        const result = await response.json();
+        outputElement.textContent = result.trick || "No trick generated.";
+
+    } catch (error) {
+        console.error("Error:", error);
+        outputElement.textContent = "Failed to generate trick. Try again.";
     }
-  </script>
+
+    loadingMessage.classList.add("hidden");
+}
+    </script>
 </body>
 </html>

@@ -81,47 +81,50 @@
   </div>
 
   <!-- Link to external JavaScript file -->
-  
   <script>
-  async function generateTrick() {
-    const concept = document.getElementById('inputLetters').value.trim();
-    const trickType = document.getElementById('trickType').value;
-    const outputElement = document.getElementById('trickText');
-    const loadingMessage = document.getElementById('loadingMessage');
+document.addEventListener("DOMContentLoaded", function () {
+  const generateBtn = document.getElementById("generateButton");
+  generateBtn.addEventListener("click", generateTrick);
+});
 
-    if (!concept) {
-      alert("Please enter words to generate a trick.");
-      return;
-    }
+async function generateTrick() {
+  const concept = document.getElementById('inputLetters').value.trim();
+  const trickType = document.getElementById('trickType').value;
+  const outputElement = document.getElementById('trickText');
+  const loadingMessage = document.getElementById('loadingMessage');
 
-    loadingMessage.classList.remove("hidden");
-    outputElement.textContent = ""; // Clear previous output
-
-    try {
-      alert("Sending request to backend...");
-
-      const response = await fetch("https://tricks-generator-1.onrender.com/generate_trick/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ concept: concept, trick_type: trickType })
-      });
-
-      alert("Response status: " + response.status);
-
-      const result = await response.json();
-      alert("Response received!");
-
-      outputElement.textContent = result.trick || "No trick generated.";
-
-    } catch (error) {
-      alert("Error occurred: " + error.message);
-      outputElement.textContent = "Failed to generate trick. Try again.";
-    }
-
-    loadingMessage.classList.add("hidden");
+  if (!concept) {
+    alert("Please enter words to generate a trick.");
+    return;
   }
+
+  loadingMessage.classList.remove("hidden");
+  outputElement.textContent = ""; // Clear previous output
+
+  try {
+    alert("Sending request to backend...");
+
+    const response = await fetch("https://tricks-generator-1.onrender.com/generate_trick/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ concept: concept, trick_type: trickType })
+    });
+
+    alert("Response status: " + response.status);
+
+    const result = await response.json();
+    alert("Response received!");
+
+    outputElement.textContent = result.trick || "No trick generated.";
+  } catch (error) {
+    alert("Error occurred: " + error.message);
+    outputElement.textContent = "Failed to generate trick. Try again.";
+  }
+
+  loadingMessage.classList.add("hidden");
+}
   </script>
 </body>
 </html>

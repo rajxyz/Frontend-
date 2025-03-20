@@ -81,6 +81,7 @@
   </div>
 
   <!-- Link to external JavaScript file -->
+  
   <script>
   async function generateTrick() {
     const concept = document.getElementById('inputLetters').value.trim();
@@ -93,12 +94,12 @@
       return;
     }
 
-    alert("Sending request to backend...");
-
     loadingMessage.classList.remove("hidden");
-    outputElement.textContent = "";
+    outputElement.textContent = ""; // Clear previous output
 
     try {
+      alert("Sending request to backend...");
+
       const response = await fetch("https://tricks-generator-1.onrender.com/generate_trick/", {
         method: "POST",
         headers: {
@@ -107,10 +108,10 @@
         body: JSON.stringify({ concept: concept, trick_type: trickType })
       });
 
-      alert("Response received from backend");
+      alert("Response status: " + response.status);
 
       const result = await response.json();
-      alert("Result: " + JSON.stringify(result)); // This will show what's coming from backend
+      alert("Response received!");
 
       outputElement.textContent = result.trick || "No trick generated.";
 
@@ -122,7 +123,5 @@
     loadingMessage.classList.add("hidden");
   }
   </script>
-  
-
 </body>
 </html>

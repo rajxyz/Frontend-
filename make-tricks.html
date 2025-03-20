@@ -81,7 +81,6 @@
   </div>
 
   <!-- Link to external JavaScript file -->
-  
   <script>
   async function generateTrick() {
     const concept = document.getElementById('inputLetters').value.trim();
@@ -90,32 +89,40 @@
     const loadingMessage = document.getElementById('loadingMessage');
 
     if (!concept) {
-        alert("Please enter words to generate a trick.");
-        return;
+      alert("Please enter words to generate a trick.");
+      return;
     }
 
+    alert("Sending request to backend...");
+
     loadingMessage.classList.remove("hidden");
-    outputElement.textContent = ""; // Clear previous output
+    outputElement.textContent = "";
 
     try {
-        const response = await fetch("https://tricks-generator-1.onrender.com/generate_trick/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ concept: concept, trick_type: trickType })
-        });
+      const response = await fetch("https://tricks-generator-1.onrender.com/generate_trick/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ concept: concept, trick_type: trickType })
+      });
 
-        const result = await response.json();
-        outputElement.textContent = result.trick || "No trick generated.";
+      alert("Response received from backend");
+
+      const result = await response.json();
+      alert("Result: " + JSON.stringify(result)); // This will show what's coming from backend
+
+      outputElement.textContent = result.trick || "No trick generated.";
 
     } catch (error) {
-        console.error("Error:", error);
-        outputElement.textContent = "Failed to generate trick. Try again.";
+      alert("Error occurred: " + error.message);
+      outputElement.textContent = "Failed to generate trick. Try again.";
     }
 
     loadingMessage.classList.add("hidden");
-}
-    </script>
+  }
+  </script>
+  
+
 </body>
 </html>
